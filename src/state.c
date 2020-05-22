@@ -92,7 +92,22 @@ void state_update(level *lvl, state *sta){
     for(int i=0;i<sta->n_enemies;i++){
         entity_physics(lvl,&sta->enemies[i].ent);
         // Kill enemy if it has less than 0 HP
-        if(sta->enemies[i].ent.hp<=0) sta->enemies[i].ent.dead = 1;
+        if(sta->enemies[i].ent.hp<=0){
+            sta->enemies[i].ent.dead = 1;
+            if(sta->enemies[i].kind==BOMBER){
+                // Detect if the player is in the explosion radius to receive damage
+                float dist_to_bomber = sqrt(pow(sta->pla.ent.x - sta->enemies[i].ent.x ,2) + pow(sta->pla.ent.y - sta->enemies[i].ent.y,2));
+                if(dist_to_bomber<=EXPLOSION_RAD) sta->pla.ent.hp -= EXPLOSION_DMG;
+                // Detect all the enemies if they're on the explosion radius to receive damage
+                for(int k=0;k<sta->n_enemies;k++){
+                    dist_to_bomber = sqrt(pow(sta->enemies[k].ent.x - sta->enemies[i].ent.x ,2) + pow(sta->enemies[k].ent.y - sta->enemies[i].ent.y,2));
+                    if(dist_to_bomber<=EXPLOSION_RAD){
+                        sta->enemies[k].ent.hp -= EXPLOSION_DMG;
+                        if(sta->enemies[k].ent.hp<=0) sta->enemies[k].ent.dead = 1;
+                    }
+                }
+            }
+        }
     }
     // Update bullets
     for(int i=0;i<sta->n_bullets;i++){
@@ -152,15 +167,23 @@ void state_populate_random(level *lvl, state *sta, int n_enemies){
                 new_enemy->ent.x = (posx+0.5)*TILE_SIZE;
                 new_enemy->ent.y = (posy+0.5)*TILE_SIZE;
                 // Pick an enemy tipe and set variables accordingly
-                int brute = rand()%4==0; // brute has 1/4 chance.
-                if(brute){
-                    new_enemy->kind   = BRUTE;
-                    new_enemy->ent.hp = BRUTE_HP;
-                    new_enemy->ent.rad = BRUTE_RAD;
-                }else{
-                    new_enemy->kind   = MINION;
-                    new_enemy->ent.hp = MINION_HP;
-                    new_enemy->ent.rad = MINION_RAD;
+                int enemy_type = rand()%4;
+                switch(enemy_type){
+                    case 0:
+                        new_enemy->kind   = BRUTE;
+                        new_enemy->ent.hp = BRUTE_HP;
+                        new_enemy->ent.rad = BRUTE_RAD;
+                        break;
+                    case 1:
+                        new_enemy->kind   = BOMBER;
+                        new_enemy->ent.hp = BOMBER_HP;
+                        new_enemy->ent.rad = BOMBER_RAD;
+                        break;
+                    default:
+                        new_enemy->kind   = MINION;
+                        new_enemy->ent.hp = MINION_HP;
+                        new_enemy->ent.rad = MINION_RAD;
+                        break;
                 }
                 // Break while(1) as the operation was successful
                 break;
