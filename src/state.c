@@ -95,17 +95,8 @@ void state_update(level *lvl, state *sta){
         if(sta->enemies[i].ent.hp<=0){
             sta->enemies[i].ent.dead = 1;
             if(sta->enemies[i].kind==BOMBER){
-                // Detect if the player is in the explosion radius to receive damage
-                float dist_to_bomber = sqrt(pow(sta->pla.ent.x - sta->enemies[i].ent.x ,2) + pow(sta->pla.ent.y - sta->enemies[i].ent.y,2));
-                if(dist_to_bomber<=EXPLOSION_RAD) sta->pla.ent.hp -= EXPLOSION_DMG;
-                // Detect all the enemies if they're on the explosion radius to receive damage
-                for(int k=0;k<sta->n_enemies;k++){
-                    dist_to_bomber = sqrt(pow(sta->enemies[k].ent.x - sta->enemies[i].ent.x ,2) + pow(sta->enemies[k].ent.y - sta->enemies[i].ent.y,2));
-                    if(dist_to_bomber<=EXPLOSION_RAD){
-                        sta->enemies[k].ent.hp -= EXPLOSION_DMG;
-                        if(sta->enemies[k].ent.hp<=0) sta->enemies[k].ent.dead = 1;
-                    }
-                }
+                // Initialize explosion entity created by BOMBER enemy
+                init_explosion(sta->enemies[i].ent.x,sta->enemies[i].ent.y,sta);
             }
         }
     }
@@ -114,6 +105,24 @@ void state_update(level *lvl, state *sta){
         int col = entity_physics(lvl,&sta->bullets[i].ent);
         // Kill bullet if it is colliding with a wall
         if(col) sta->bullets[i].ent.dead = 1;
+    }
+    // Updates explosions
+    for(int i=0;i<sta->n_explosions;i++){
+        if(!sta->explosions[i].dealedDMG){
+            if(entity_explode(&sta->pla.ent,&sta->explosions[i].ent)){
+                sta->pla.ent.hp -= EXPLOSION_DMG;
+                sta->explosions[i].dealedDMG +=1;
+            }
+            for(int k=0;k<sta->n_enemies;k++){
+                if(entity_explode(&sta->enemies[k].ent,&sta->explosions[i].ent)){
+                    sta->enemies[k].ent.hp -= EXPLOSION_DMG;
+                    sta->explosions[i].dealedDMG +=1;
+                }
+            }
+        }
+        sta->explosions[i].ent.rad -=5;
+        sta->explosions[i].ent.hp -=1;
+        if(sta->explosions[i].ent.hp<=0) sta->explosions[i].ent.dead=1;
     }
 
 
@@ -142,6 +151,19 @@ void state_update(level *lvl, state *sta){
         }
         // Update the number of enemies
         sta->n_enemies = new_n_enemies;
+    }
+
+        {
+        // We filter the explosion array, moving each explosion "alive" to the position it would have on a filtered array
+        int new_n_explosions = 0;
+        for(int i=0;i<sta->n_explosions;i++){
+            if(!sta->explosions[i].ent.dead){
+                sta->explosions[new_n_explosions] = sta->explosions[i];
+                new_n_explosions += 1;
+            }
+        }
+        // Update the number of explosions
+        sta->n_explosions = new_n_explosions;
     }
 
 }
@@ -190,6 +212,23 @@ void state_populate_random(level *lvl, state *sta, int n_enemies){
             }
         }
     }
+}
+
+void init_explosion(const float x, const float y, state *sta){
+    // Create new explosion entity in the next unused explosions array
+    explosion *new_explosion = &sta->explosions[sta->n_explosions];
+    sta->n_explosions++;
+
+    // Initialize all new explosion fields to 0
+    memset(new_explosion,0,sizeof(explosion));
+
+    // Put the explosion at the Bomber position
+    new_explosion->ent.x = x;
+    new_explosion->ent.y = y;
+
+    // Set clock timer with HP and radius
+    new_explosion->ent.hp = 11;
+    new_explosion->ent.rad = EXPLOSION_RAD;
 }
 
 void state_free(state *sta){

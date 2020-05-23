@@ -45,10 +45,20 @@ typedef struct {
     // TODO: We may want to add more fields...
 } bullet;
 
+// ==== EXPLOSION DEFINITION
+typedef enum {ENEMY=0, OBJECT=1} explosiontype;
+
+typedef struct {
+    entity ent;
+    explosiontype type;
+    int dealedDMG;
+} explosion;
+
 // ==== STATE DEFINITION
 
 #define MAX_ENEMIES 128
 #define MAX_BULLETS 128
+#define MAX_EXPLOSIONS 128
 
 #define N_BUTTONS 5
 
@@ -65,6 +75,9 @@ typedef struct {
     int n_bullets;
     bullet bullets[MAX_BULLETS];
 
+    int n_explosions;
+    explosion explosions[MAX_EXPLOSIONS];
+
     // State of the controls, should be updated on each step.
     int button_state[N_BUTTONS];
     float aim_angle;
@@ -79,6 +92,9 @@ void state_update(level *lvl, state *sta);
 
 // Put enemies at random in the state until it has n_enemies enemies.
 void state_populate_random(level *lvl, state *sta, int n_enemies);
+
+// Initializes an explosion when called
+void init_explosion(const float x, const float y, state *sta);
 
 // Deletes a state and the memory it requires.
 void state_free(state *sta);
