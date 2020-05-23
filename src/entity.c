@@ -28,3 +28,13 @@ int entity_collision(const entity *ent1, const entity *ent2){
     // Return 1 if the distance is smaller than the sum of both radious
     return (delta_mag < ent1->rad + ent2->rad);
 }
+
+int entity_explode(const entity *ent, const entity *exp){
+    // Check distances from ent and exp
+    float delta_x = ent->x - exp->x;
+    float delta_y = ent->y - exp->y;
+    float delta_mag = sqrt(delta_x*delta_x+delta_y*delta_y);
+
+    // Return 1 if the distance is smaller than the explosion radius
+    return (delta_mag < exp->rad);
+}

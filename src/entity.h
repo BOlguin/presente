@@ -26,4 +26,6 @@ int entity_physics(const level *lvl, entity *ent);
 // Checks if two entities are colliding, retrieving 1 in that case.
 int entity_collision(const entity *ent1, const entity *ent2);
 
+// Checks if an entity is inside an explosion, retrieving 1 in that case.
+int entity_explode(const entity *ent, const entity *exp);
 #endif
