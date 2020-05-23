@@ -96,7 +96,7 @@ void state_update(level *lvl, state *sta){
             sta->enemies[i].ent.dead = 1;
             if(sta->enemies[i].kind==BOMBER){
                 // Initialize explosion entity created by BOMBER enemy
-                init_explosion(sta->enemies[i].ent,sta->enemies[i].kind,'ENEMY');
+                init_explosion(&sta->enemies[i].ent,ENEMY,sta);
             }
         }
     }
@@ -214,7 +214,7 @@ void state_populate_random(level *lvl, state *sta, int n_enemies){
     }
 }
 
-void init_explosion(const entity *ent, const char *type, state *sta){
+void init_explosion(const entity *ent, const int type, state *sta){
     // Create new explosion entity in the next unused explosions array
     explosion *new_explosion = &sta->explosions[sta->n_explosions];
     sta->n_explosions++;
@@ -230,7 +230,7 @@ void init_explosion(const entity *ent, const char *type, state *sta){
     new_explosion->ent.hp = 11;
     new_explosion->ent.rad = EXPLOSION_RAD;
 
-    if(type=='ENEMY'){
+    if(type==0){
         new_explosion->type=0;
     }
 }

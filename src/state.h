@@ -94,7 +94,7 @@ void state_update(level *lvl, state *sta);
 void state_populate_random(level *lvl, state *sta, int n_enemies);
 
 // Initializes an explosion when called
-void init_explosion(const entity *ent, const char *type, state *sta);
+void init_explosion(const entity *ent, const int type, state *sta);
 
 // Deletes a state and the memory it requires.
 void state_free(state *sta);
