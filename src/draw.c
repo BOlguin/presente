@@ -76,6 +76,16 @@ void draw_state(const level *lvl, const state *sta){
         DrawCircleV(vec,ent.rad,PINK);
     }
 
+    // Draw explosions
+    for(int i=0;i<sta->n_explosions;i++){
+        // Get a copy of the explosion entity
+        entity ent = sta->explosions[i].ent;
+        // Initialize a Vector2 that represents the center of the entity position
+        Vector2 vec = {ent.x,ent.y};
+        // Draw a circle with the radius of the entity
+        DrawCircleV(vec,ent.rad,ORANGE);
+    }
+
     // Stop drawing relative to the camera
     EndMode2D();
 }
